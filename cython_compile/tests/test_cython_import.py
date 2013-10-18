@@ -1,0 +1,83 @@
+'''
+Created on 11/07/2013
+
+@author: mmpe
+'''
+from cython_compile import cython_import, is_compiled
+from mytimeit import get_time
+import inspect
+import os
+import unittest
+
+
+
+class Test_cython_import(unittest.TestCase):
+
+
+
+
+    def test_compiled(self):
+        name = 'cy_test'
+        self.compare(name, CyTest, 1)
+        import cy_test
+        self.assertEqual(cy_test.CyTest(2), 4)
+        self.assertTrue(is_compiled(cy_test))
+
+    def test_for_loop(self):
+        t_py, t_cy = self.compare("for_loop1", CyTest1, 1000000)
+        print t_py, t_cy
+        self.assertTrue(t_cy * 2 < t_py)
+
+
+
+    def test_for_loop2(self):
+        t_py, t_cy = self.compare("for_loop2", CyTest2, 1000000)
+        self.assertTrue(t_cy * 10 < t_py)
+
+
+
+    def compare(self, module_name, func, *args):
+            clean(module_name)
+            with open(module_name + '.py', 'w') as fid:
+                fid.write(inspect.getsource(func))
+
+
+            res1, t_py = get_time(func)(*args)
+
+            cython_import(module_name)
+            cmodule = __import__(module_name)
+            cfunc = getattr(cmodule, func.func_name)
+            res2, t_cy = get_time(cfunc)(*args)
+            self.assertEqual(res1, res2, "%s - %s" % (module_name, func))
+            #clean(module_name)
+            return t_py, t_cy
+
+
+def clean(filename):
+    for ext in ['.py', '.pyd']:
+        if os.path.isfile(filename + ext):
+            try:
+                os.remove(filename + ext)
+            except WindowsError:
+                pass
+
+
+
+def CyTest(n):
+    return n * 2
+
+def CyTest1(n):
+    for i in xrange(n):
+        pass
+
+def CyTest2(n):  #cpdef CyTest2(int n):
+    #cdef int i
+    #cdef int count
+    count = 0
+    for i in xrange(n):
+        count = count + i % 100
+    return count
+
+if __name__ == "__main__":
+    #import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()
