@@ -3,11 +3,13 @@ from MyQt.Qsci_replacement.LineTextWidget import LineTextWidget
 d = None
 d = dir()
 
-
-if os.environ.get('QT_API', "pyqt") == "pyqt":
+gui = os.environ.get('QT_API', "pyqt")
+if gui == "pyqt":
     from PyQt4.Qsci import *
-else:
+elif gui == "pyside":
     QsciScintilla = LineTextWidget
+    pass
+else:
     pass
 
 

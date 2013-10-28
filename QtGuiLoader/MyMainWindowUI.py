@@ -1,61 +1,47 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MyMainWindowUI.ui'
+# Form implementation generated from reading ui file '../QtGuiLoader\MyMainWindowUI.ui'
 #
-# Created: Fri Sep 06 08:42:10 2013
-#      by: PyQt4 UI code generator 4.9.6
+# Created: Wed Oct 23 15:00:22 2013
+#      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
-
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+from PySide import QtCore, QtGui
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.setObjectName("MainWindow")
         MainWindow.resize(225, 102)
         self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.centralwidget.setObjectName("centralwidget")
         self.pushButton = QtGui.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(30, 20, 75, 23))
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.pushButton.setObjectName("pushButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 225, 21))
-        self.menubar.setObjectName(_fromUtf8("menubar"))
+        self.menubar.setObjectName("menubar")
         self.menuFile = QtGui.QMenu(self.menubar)
-        self.menuFile.setObjectName(_fromUtf8("menuFile"))
+        self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.actionSayHello = QtGui.QAction(MainWindow)
-        self.actionSayHello.setObjectName(_fromUtf8("actionSayHello"))
+        self.actionSayHello.setObjectName("actionSayHello")
         self.menuFile.addAction(self.actionSayHello)
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
-        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.actionSayHello.trigger)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.actionSayHello.trigger)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.pushButton.setText(_translate("MainWindow", "PushButton", None))
-        self.menuFile.setTitle(_translate("MainWindow", "File", None))
-        self.actionSayHello.setText(_translate("MainWindow", "SayHello", None))
-        self.actionSayHello.setToolTip(_translate("MainWindow", "Prints \"Hello\"", None))
-        self.actionSayHello.setShortcut(_translate("MainWindow", "Ctrl+S", None))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "PushButton", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSayHello.setText(QtGui.QApplication.translate("MainWindow", "SayHello", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSayHello.setToolTip(QtGui.QApplication.translate("MainWindow", "Prints \"Hello\"", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSayHello.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
 

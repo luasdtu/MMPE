@@ -61,10 +61,10 @@ class QtGuiLoader(object):
     def setupUI(self, widget):
         self.ui.setupUi(widget)
         root_widgets = [w for w in widget.children() if w.__class__.__name__ == "QWidget"]
-        if len(root_widgets) == 0:
+        if len(root_widgets) == 0 or widget.layout() is not None:
             self.ui_widget = self
         else:
-            self.ui_widget = [w for w in widget.children() if w.__class__.__name__ == "QWidget"][-1]
+            self.ui_widget = root_widgets[-1]
             g = QtGui.QGridLayout()
             if isinstance(self, QtWidgetLoader):
                 g.setMargin(0)
@@ -176,7 +176,7 @@ class QtDialogLoader(QtGuiLoader, QtGuiApplication, QtGui.QDialog):
         except:
             self.compile_ui(ui_module, True)
             self.ui = ui_module.Ui_Form()
-            self.ui.setupUi(self)
+            self.setupUI(self)
 
         if connect_actions:
             self.connect_actions()

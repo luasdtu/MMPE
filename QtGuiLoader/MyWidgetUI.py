@@ -1,40 +1,35 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MyWidgetUI.ui'
+# Form implementation generated from reading ui file '../QtGuiLoader\MyWidgetUI.ui'
 #
-# Created: Thu Jul 04 09:57:23 2013
-#      by: PyQt4 UI code generator 4.9.5
+# Created: Wed Oct 23 15:00:22 2013
+#      by: pyside-uic 0.2.15 running on PySide 1.2.1
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
-
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    _fromUtf8 = lambda s: s
+from PySide import QtCore, QtGui
 
 class Ui_Form(object):
     def setupUi(self, Form):
-        Form.setObjectName(_fromUtf8("Form"))
+        Form.setObjectName("Form")
         Form.resize(223, 164)
         self.horizontalLayoutWidget = QtGui.QWidget(Form)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(9, 9, 191, 25))
-        self.horizontalLayoutWidget.setObjectName(_fromUtf8("horizontalLayoutWidget"))
+        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setMargin(0)
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.lineEdit = QtGui.QLineEdit(self.horizontalLayoutWidget)
-        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
+        self.lineEdit.setObjectName("lineEdit")
         self.horizontalLayout.addWidget(self.lineEdit)
         self.pushButton = QtGui.QPushButton(self.horizontalLayoutWidget)
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.pushButton.setObjectName("pushButton")
         self.horizontalLayout.addWidget(self.pushButton)
         self.actionPrintText = QtGui.QAction(Form)
-        self.actionPrintText.setObjectName(_fromUtf8("actionPrintText"))
+        self.actionPrintText.setObjectName("actionPrintText")
 
         self.retranslateUi(Form)
-        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.actionPrintText.trigger)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL("clicked()"), self.actionPrintText.trigger)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

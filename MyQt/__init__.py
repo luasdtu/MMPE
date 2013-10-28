@@ -1,4 +1,6 @@
-
+class NoneQt(object):
+    def __init__(self, *args, **kwargs):
+        pass
 
 QtCore = None
 QtGui = None
@@ -8,21 +10,29 @@ ui_compiler = None
 import sys
 import os
 gui = os.environ.get('QT_API', "pyqt")
+
 if gui == "pyqt":
-    QtCore = __import__("PyQt4.QtCore").QtCore
-    QtGui = __import__("PyQt4.QtGui").QtGui
-    ui_compiler = "pyuic4"
-elif gui == "pyside":
+    try:
+        QtCore = __import__("PyQt4.QtCore").QtCore
+        QtGui = __import__("PyQt4.QtGui").QtGui
+        Qsci = __import__("PyQt4.Qsci").Qsci
+        ui_compiler = "pyuic4"
+    except:
+        gui = "pyside"
+if gui == "pyside":
+    os.environ['QT_API'] = gui
     QtCore = __import__("PySide.QtCore").QtCore
     QtGui = __import__("PySide.QtGui").QtGui
-    Qsci = __import__("Qsci", globals(),locals(), ['Qsci'])
+    Qsci = __import__("Qsci", globals(), locals(), ['Qsci'])
     ui_compiler = "pyside-uic"
-elif gui == "none":
+
+if gui == "none":
     QtCore = None
     QtGui = None
-else:
-    raise NotImplementedError
-    
+
+print "Using gui: " + gui
+
+
 ###elif gui==NONE:
 #QtCore = __import__("PyQtText.QtCore").QtCore
 #QtGui = __import__("PyQtText.QtGui").QtGui
