@@ -6,7 +6,25 @@ try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
 except NameError: pass
-class TextUI(object):
+
+class DaemonUI():
+
+    def progress_iterator(self, iterator, text="Working... Please wait", parent=None, allow_cancel=True):
+        return iterator
+
+    def exec_long_task(self, text, allow_cancel, task, *args, **kwargs):
+        return task(*args, **kwargs)
+
+    def show_error(self, msg, title="Error"):
+        pass
+
+    def show_message(self, msg, title=""):
+        pass
+
+
+
+
+class TextUI(DaemonUI):
 
 
     def progress_iterator(self, iterator, text="Working... Please wait", parent=None, allow_cancel=True):
@@ -32,3 +50,7 @@ class TextUI(object):
     def show_message(self, msg, title=""):
         if title != "":
             print ("%s\n%s\n%s" % (title, "-"*len(title), msg))
+        else:
+            print (msg)
+
+
