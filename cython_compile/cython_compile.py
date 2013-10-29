@@ -6,9 +6,6 @@ Created on 10/07/2013
 
 Wrapper functions and decorators for compiling functions using Cython
 
-
-
-
 '''
 import inspect
 import os
@@ -18,6 +15,7 @@ import subprocess
 import sys
 import numpy as np
 import warnings
+
 
 
 def wrap(f, autodeclare, *args, **kwargs):
@@ -109,9 +107,9 @@ def cython_import(module_name, compiler=None):
     my_module.my_func()
 
     """
-    exec("import %s" % module_name)
-    pyd_module = module_name
-    if not is_compiled(eval(pyd_module)):
+    globals()[module_name] = __import__(module_name)
+    pyd_module = eval(module_name)
+    if not is_compiled(pyd_module):
 
         # Read py-module
         file_path = module_name.replace(".", "/") + ".py"
