@@ -85,7 +85,7 @@ def write_setup(name, version, description="", author="", modules=[], includes=[
 build_exe_options = {
 "includes": %s,
 "packages": %s,
-'excludes' : ['PyQt4.uic.port_v3', 'Tkconstants','tcl', 'tk', 'doctest', 'MSVCP90.dll', '_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger','pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter'],
+'excludes' : ['PyQt4.uic.port_v3', 'Tkconstants','tcl', 'tk', 'doctest', '_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger','pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter'],
 
 "include_files": %s}
 

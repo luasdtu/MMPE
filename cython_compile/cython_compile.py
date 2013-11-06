@@ -97,7 +97,7 @@ def cython_compile_autodeclare(f):
     return w
 
 
-def cython_import(module_name, compiler=None):
+def cython_import(import_module_name, compiler=None):
     """Compiles and imports a module. Use it similar to the normal import
     Example (import my_func from my_module):
 
@@ -107,12 +107,13 @@ def cython_import(module_name, compiler=None):
     my_module.my_func()
 
     """
-    globals()[module_name] = __import__(module_name)
+    module_name = import_module_name.split(".")[-1]
+    globals()[module_name] = __import__(import_module_name, fromlist=module_name)
     pyd_module = eval(module_name)
     if not is_compiled(pyd_module):
 
         # Read py-module
-        file_path = module_name.replace(".", "/") + ".py"
+        file_path = import_module_name.replace(".", "/") + ".py"
         fid = open(file_path)
         pylines = fid.readlines()
         fid.close()
@@ -125,7 +126,7 @@ def cython_import(module_name, compiler=None):
         fid.close()
 
         # compile, import compiled module and delete temporary files
-        compile_and_cleanup(module_name, pyx_filename, compiler)
+        compile_and_cleanup(import_module_name, pyx_filename, compiler)
 
 
 def compile_and_cleanup(module, pyx_filename, compiler=None):

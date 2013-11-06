@@ -6,7 +6,7 @@ Created on 29/10/2013
 
 from hawc2ascii2bin import hawc2ascii2bin
 from hawc2ascii2bin.hawc2ascii2bin import ascii2bin, size_from_file
-from hawc2ascii2bin.unittest import Hawc2io
+from hawc2ascii2bin.unit_test import Hawc2io
 import numpy as np
 import os
 import sys
@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         ascii_file = Hawc2io.ReadHawc2('Hawc2ascii')
         bin_file = Hawc2io.ReadHawc2("Hawc2ascii_bin")
 
-        np.allclose(ascii_file.ReadAscii(), bin_file.ReadBinary())
+        np.testing.assert_array_almost_equal(ascii_file.ReadAscii(), bin_file.ReadBinary(), 1)
         self.assertEqual(ascii_file.ChInfo, bin_file.ChInfo)
 
     def testAscii2bin_new_name(self):
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         ascii_file = Hawc2io.ReadHawc2('Hawc2ascii')
         bin_file = Hawc2io.ReadHawc2("Hawc2bin")
 
-        np.allclose(ascii_file.ReadAscii(), bin_file.ReadBinary())
+        np.testing.assert_array_almost_equal(ascii_file.ReadAscii(), bin_file.ReadBinary(), 1)
         self.assertEqual(ascii_file.ChInfo, bin_file.ChInfo)
 
 

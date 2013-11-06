@@ -3,19 +3,18 @@ Created on 12/09/2013
 
 @author: Mads M. Pedersen (mmpe@dtu.dk)
 '''
-from __future__ import division, print_function, absolute_import, \
-    unicode_literals
+from __future__ import division, print_function, absolute_import, unicode_literals
 import h5py
-import numpy as np
-import numpy.ma as ma
 import os
 try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
 except NameError: pass
+import numpy as np
+import numpy.ma as ma
 block_name_fmt = "block%04d"
 
-def load(filename, dtype=np.float32):
+def load(filename, dtype=None):
     """
     load a General Time Series Data Format - datafile
     =================================================
@@ -27,7 +26,8 @@ def load(filename, dtype=np.float32):
         filename or open file object
 
     dtype: numpy dtype
-        type of returned data array, e.g. float16, float32 or float64
+        type of returned data array, e.g. float16, float32 or float64.
+        If None(default) the type of the returned data depends on the type of the file data
 
     Returns
     -------
@@ -74,7 +74,16 @@ def load(filename, dtype=np.float32):
         if 'attribute_descriptions' in f:
             info['attribute_descriptions'] = f['attribute_descriptions'][:]
         no_blocks = f.attrs['no_blocks']
-        data = np.empty((0, no_attributes))
+
+        if dtype is None:
+            file_dtype = f[block_name_fmt % 0]['data'].dtype
+            if "float" in str(file_dtype):
+                dtype = file_dtype
+            elif file_dtype in [np.int8, np.uint8, np.int16, np.uint16]:
+                dtype = np.float32
+            else:
+                dtype = np.float64
+        data = np.empty((0, no_attributes), dtype=dtype)
         time = np.empty((0), dtype=np.float64)
         for i in range(no_blocks):
             block = f[block_name_fmt % i]
@@ -176,7 +185,6 @@ def append_block(filename, data, **kwargs):
 
 
         if "int" in str(dtype):
-#            if np.any(np.isnan(data)):
             nan = np.isnan(data)
             non_nan_data = ma.masked_array(data, nan)
             offsets = np.min(non_nan_data, 0)
@@ -188,14 +196,7 @@ def append_block(filename, data, **kwargs):
 
             data = data.astype(dtype)
             data[nan] = np.iinfo(dtype).max
-#            else:
-#                offsets = np.min(data, 0)
-#                data = np.copy(data)
-#                data -= offsets
-#                gains = np.max(data, 0).astype(np.float64) / (np.iinfo(dtype).max)
-#                not0 = np.where(gains != 0)
-#                data[:, not0] /= gains[not0]
-#                data = data.astype(dtype)
+
             block.create_dataset('gains', data=gains)
             block.create_dataset('offsets', data=offsets)
 

@@ -5,6 +5,7 @@ Created on 12/07/2013
 '''
 
 import glob
+import os
 import unittest
 
 def module_strings():
@@ -28,3 +29,11 @@ else:
         exec("from %s import *" % mstr.replace("\\" , "."))
 
 
+
+for root, folder, files in os.walk("."):
+    for f in files:
+        if f.endswith(".pyd"):
+            try:
+                os.remove(os.path.join(root, f))
+            except:
+                pass

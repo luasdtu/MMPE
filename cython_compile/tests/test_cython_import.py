@@ -35,6 +35,10 @@ class Test_cython_import(unittest.TestCase):
         self.assertTrue(t_cy * 10 < t_py)
 
 
+    def test_for_loop2_in_pack(self):
+        t_py, t_cy = self.compare("pack.for_loop2", CyTest2, 1000000)
+        self.assertTrue(t_cy * 10 < t_py, (t_cy, t_py))
+
 
     def compare(self, module_name, func, *args):
             clean(module_name)
@@ -45,7 +49,8 @@ class Test_cython_import(unittest.TestCase):
             res1, t_py = get_time(func)(*args)
 
             cython_import(module_name)
-            cmodule = __import__(module_name)
+            cmodule = __import__(module_name, fromlist=module_name.split(".")[-1])
+            self.assertTrue(is_compiled(cmodule), module_name)
             cfunc = getattr(cmodule, func.func_name)
             res2, t_cy = get_time(cfunc)(*args)
             self.assertEqual(res1, res2, "%s - %s" % (module_name, func))

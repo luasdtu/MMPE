@@ -24,9 +24,11 @@ Examples of how to use can be found in UseQtGuiLoader.py
 
 
 from MyQt import QtGui, QtCore, ui_compiler
+from build_cx_exe import exe_std_err
 import os
 import sys
 import time
+import win32ui
 
 
 class QtGuiLoader(object):
@@ -142,6 +144,9 @@ class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
         if connect_actions:
             self.connect_actions()
 
+        if "python" not in os.path.basename(sys.executable):
+            sys.stderr = exe_std_err.ExeStdErr()
+
     def start(self):
         self.load_settings()
 
@@ -170,8 +175,8 @@ class QtDialogLoader(QtGuiLoader, QtGuiApplication, QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.modal = modal
         self.setModal(modal)
-        self.ui = ui_module.Ui_Form()
         try:
+            self.ui = ui_module.Ui_Form()
             self.setupUI(self)
         except:
             self.compile_ui(ui_module, True)

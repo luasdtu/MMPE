@@ -1,9 +1,11 @@
 from PyQt4 import QtGui
+import os
+os.environ['QT_API'] = "pyqt"
+from QtGuiLoader.QtGuiLoader import QtMainWindowLoader
 from build_cx_exe.tests.demonstration import PlotUI
-from build_cx_exe.tests.demonstration.QtGuiLoader import QtMainWindowLoader
 from build_cx_exe.tests.demonstration.matplotlibwidget import MatplotlibWidget
-import numpy as np
 from scipy.stats import stats
+import numpy as np
 class Plot(QtMainWindowLoader):
     def __init__(self):
         QtMainWindowLoader.__init__(self, PlotUI)

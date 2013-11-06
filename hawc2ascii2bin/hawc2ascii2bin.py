@@ -8,7 +8,7 @@ except NameError: pass
 try: str = unicode; unicode = None
 except NameError: pass
 
-
+sys.path.append(".")
 
 def size_from_file(selfilename):
     with open(selfilename) as f:
@@ -29,8 +29,8 @@ def ascii2bin(ascii_selfilename, bin_selfilename=None, ui=textui.TextUI()):
     if bin_selfilename is None:
         bin_selfilename = ascii_selfilename[:-4] + "_bin.sel"
     ui.show_message("Converting %s to %s" % (ascii_selfilename, bin_selfilename))
-    cython_compile.cython_import('cy_dat_ascii2bin')
-    from cy_dat_ascii2bin import dat_ascii2bin_progress
+    cython_compile.cython_import('hawc2ascii2bin.cy_dat_ascii2bin')
+    from hawc2ascii2bin.cy_dat_ascii2bin import dat_ascii2bin_progress
 
     size = size_from_file(ascii_selfilename)
 
