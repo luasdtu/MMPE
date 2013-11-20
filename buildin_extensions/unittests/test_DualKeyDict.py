@@ -138,6 +138,9 @@ class Test(unittest.TestCase):
         dkdcopy._additional_key_att[0].replace("n", "copy")
         self.assertEqual(self.dkd._additional_key_att, "name")
 
+    def test_iterate(self):
+        print [i for i in self.dkd]
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

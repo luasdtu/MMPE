@@ -26,8 +26,13 @@ class DualKeyDict(object):
         else:
             return obj
 
+
+
     def __contains__(self, key):
         return key in self._dict
+
+    def __iter__(self):
+        return (i for i in self._unique_keys)
 
     def __setitem__(self, key, obj):
         self.add(obj)
@@ -72,6 +77,10 @@ class DualKeyDict(object):
     def values(self):
         return [self._dict[k] for k in self._unique_keys]
 
+    def __str__(self):
+        return "{%s}" % ",".join(["(%s,%s): %s" % (getattr(obj, self._unique_key_att), getattr(obj, self._additional_key_att), obj) for obj in self.values()])
+
+
     def remove(self, value):
         """
         Value may be:
@@ -104,6 +113,7 @@ class DualKeyDict(object):
         copy._dict = self._dict.copy()
 
         return copy
+
 
 
 
