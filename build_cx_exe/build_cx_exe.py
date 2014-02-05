@@ -10,22 +10,25 @@ import shutil
 import sys
 import time
 import zipfile
+NUMPY = 'numpy'
+MATPLOTLIB = 'matplotlib'
+GUIDATA = 'guidata'
+PYQT4 = 'PyQt4'
+PYSIDE = 'PySide'
+SCIPY = 'scipy'
+CTYPES = '_ctypes'
+MULTIPROCESSING = '_multiprocessing'
 
-MATPLOTLIB = 0
-GUIDATA = 1
-PYQT4 = 2
-SCIPY = 3
-def build_exe(filename, version="1.0.0", description="", author="", modules=[], includes=[], packages="[]", include_files=[], icon=None):
-    import io_operations
+def build_exe(filename, version="1.0.0", description="", author="", modules=[NUMPY], includes=[], packages="[]", include_files=[], icon=None):
     basename = filename.replace('.py', '')
     folder = '%s_dist/' % basename
     prepare(modules)
     write_setup(basename, version, description, author, modules, includes, packages, include_files, icon)
 
     if os.path.isdir(folder):
-        io_operations.repeat(shutil.rmtree, folder)
+        shutil.rmtree(folder)
     os.system('%s setup.py build' % sys.executable)
-    io_operations.repeat(shutil.move, './build/', folder)
+    shutil.move('./build/', folder)
     os.remove('setup.py')
     clean(modules)
 
@@ -48,15 +51,21 @@ def build_msi(filename, version, description="", author=""):
     print "Installer created (%s/)" % (folder)
 
 
-def write_setup(name, version, description="", author="", modules=[], includes=[], packages="[]", include_files=[], icon=None):
+def write_setup(name, version, description="", author="", modules=[NUMPY], includes=[], packages="[]", include_files=[], icon=None):
     """['appfuncs','gui_test']"""
     """["graphics/", "imageformats/", ]"""
     """"includes":["sip"],"""
     imports = []
     base = ""
+    excludes = ['PyQt4.uic.port_v3', 'Tkconstants', 'tcl', 'tk', 'doctest', '_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger', 'pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter',
+                'tables', 'zmq', 'win32', 'Pythonwin', 'PySide', 'Cython', 'statmodels', 'cvxopt', 'PIL', '_sqlite3', '_ssl', '_testcapi',
+                'markupsafe', 'numexpr', '_elementtree', '_hashlib', '_testcapi', 'bz2', 'simplejson', 'pyexpat',
+                MATPLOTLIB, GUIDATA, PYQT4, PYSIDE, SCIPY, NUMPY, MULTIPROCESSING, CTYPES]
+    #'pandas', '_socket', 'sip',
     if MATPLOTLIB in modules:
         include_files.append("""( matplotlib.get_data_path(),"mpl-data")""")
         imports.append("import matplotlib")
+
     if GUIDATA in modules:
         include_files.append("'guidata/images/'")
     if PYQT4 in modules:
@@ -67,6 +76,10 @@ def write_setup(name, version, description="", author="", modules=[], includes=[
         imports.append("import scipy.sparse.csgraph")
         includes.append("""'scipy.sparse.csgraph._validation', 'scipy.sparse.linalg.dsolve.umfpack',
         'scipy.integrate.vode', 'scipy.integrate._ode','scipy.integrate.lsoda'""")
+
+    for m in modules:
+        excludes.remove(m)
+
 
 
     imports = "\n".join(imports)
@@ -85,7 +98,7 @@ def write_setup(name, version, description="", author="", modules=[], includes=[
 build_exe_options = {
 "includes": %s,
 "packages": %s,
-'excludes' : ['PyQt4.uic.port_v3', 'Tkconstants','tcl', 'tk', 'doctest', '_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger','pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter'],
+'excludes' : %s,
 
 "include_files": %s}
 
@@ -96,7 +109,7 @@ description="%s",
 author = "%s",
 options = { "build_exe": build_exe_options},
 executables = [Executable("%s.py", %s%sshortcutName="%s", shortcutDir="DesktopFolder")])
-    """ % (imports, includes, packages, include_files, name, version, description, author, name, base, icon, name))
+    """ % (imports, includes, packages, excludes, include_files, name, version, description, author, name, base, icon, name))
 
 
 def prepare(modules):

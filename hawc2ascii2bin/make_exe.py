@@ -10,4 +10,4 @@ try: str = unicode; unicode = None
 except NameError: pass
 
 import build_cx_exe
-build_cx_exe.build_exe("hawc2ascii2bin.py", version="1.0.1")
+build_cx_exe.build_exe("ascii2bin.py", version="2.0.0")

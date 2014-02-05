@@ -34,6 +34,11 @@ def wrap(f, autodeclare, *args, **kwargs):
     name = os.path.relpath(inspect.getabsfile(f), os.getcwd()).replace(".py", "")
     name = name.replace("<", "").replace(">", "").replace("-", "")
     name = "%s_%s" % (name, f.func_name)
+    if name.startswith(".."):
+        rel_dir = os.path.dirname(name) + os.path.sep
+        sys.path.append(rel_dir)
+        name = name[len(rel_dir):]
+        pass
 
     module_name = name.replace(os.path.sep, ".")
 
@@ -49,7 +54,8 @@ def wrap(f, autodeclare, *args, **kwargs):
         else:
             # source lines except '@cython_compile'
             source_lines = inspect.getsourcelines(f)[0][1:]
-            pyx_lines = py2pyx(source_lines)
+            indent = source_lines[0].index("def")
+            pyx_lines = py2pyx([l[indent:] for l in source_lines])
 
         # Write pyrex code lines to .pyx file
         pyx_filename = name.replace("\\", "/") + ".pyx"
@@ -113,7 +119,14 @@ def cython_import(import_module_name, compiler=None):
     if not is_compiled(pyd_module):
 
         # Read py-module
-        file_path = import_module_name.replace(".", "/") + ".py"
+        file_name = import_module_name.replace(".", "/") + ".py"
+        for p in ["."] + sys.path:
+            if os.path.isfile(os.path.join(p, file_name)):
+                file_path = os.path.join(p, file_name).replace("\\", "/")
+                break
+        else:
+            raise IOError("Module %s cannot be found" % file_name)
+
         fid = open(file_path)
         pylines = fid.readlines()
         fid.close()
@@ -182,6 +195,9 @@ ext_modules = ext_modules
 
     else:
         print "Compiling succeeded"
+        for f in ['setup.py', pyx_filename, pyx_filename.replace(".pyx", '.c')]:
+            if os.path.isfile(f):
+                os.remove(f)
 
     # Clean up. Remove temporary files and folders
     if os.path.isdir("build"):
@@ -189,9 +205,7 @@ ext_modules = ext_modules
             shutil.rmtree("build")
         except:
             pass
-    for f in ['setup.py', pyx_filename, pyx_filename.replace(".pyx", '.c')]:
-        if os.path.isfile(f):
-            os.remove(f)
+
     return cmodule
 
 

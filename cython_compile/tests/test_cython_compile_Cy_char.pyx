@@ -1,0 +1,5 @@
+import cython
+import numpy as np
+cimport numpy as np
+cpdef bytes Cy_char(char* c):
+    return c.upper()

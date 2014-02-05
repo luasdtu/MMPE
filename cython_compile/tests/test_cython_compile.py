@@ -3,20 +3,27 @@ Created on 11/07/2013
 
 @author: mmpe
 '''
-from cython_compile import cython_import, cython_compile
-from mytimeit import get_time
+from StringIO import StringIO
 import inspect
 import math
 import os
+import subprocess
 import sys
+import time
 import unittest
-from StringIO import StringIO
 
+from cython_compile import cython_import, cython_compile
+from cython_compile.tests import cleanup
+from mytimeit import get_time
 
 
 class Test_cython_compile(unittest.TestCase):
 
+    @classmethod
+    def tearDownClass(cls):
 
+        subprocess.Popen(r'python cleanup.py', cwd=os.path.realpath("."))
+        super(Test_cython_compile, cls).tearDownClass()
 
 
     def test_compiled(self):
@@ -69,6 +76,12 @@ class Test_cython_compile(unittest.TestCase):
     def test_np(self):
         clean("test_cython_compile_Cy_np")
         self.assertEqual(list(Cy_np()), [1, 2])
+
+
+    def test_char(self):
+        #self.assertEqual(Cy_char('a'), "97")
+        print Cy_char('a')
+
 
     def compare(self, module_name, func, *args):
             clean(module_name)
@@ -161,6 +174,9 @@ def Cy_np():
     x = np.array([1, 2])
     return x
 
+@cython_compile
+def Cy_char(c):  #cpdef bytes Cy_char(char* c):
+    return c.upper()
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

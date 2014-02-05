@@ -10,11 +10,12 @@ import os
 import unittest
 
 
-
+import sys
 class Test_cython_import(unittest.TestCase):
 
 
-
+    def setUp(self):
+        sys.path.append(".")
 
     def test_compiled(self):
         name = 'cy_test'

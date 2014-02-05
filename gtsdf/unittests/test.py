@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
         np.testing.assert_array_equal(time, np.arange(4, 5.5, .25))
 
     def test_data(self):
-        fn = self.f + 'time.hdf5'
+        fn = self.f + 'data.hdf5'
         d = np.arange(12).reshape(6, 2)
         gtsdf.save(fn, d)
         f = h5py.File(fn)
@@ -173,13 +173,23 @@ class Test(unittest.TestCase):
         _, data, _ = gtsdf.load(fn)
         np.testing.assert_array_almost_equal(data, d, 4)
 
-    def test_nan_float(self):
-        fn = self.f + 'nan.hdf5'
+
+
+    def test_outlier(self):
+        fn = self.f + 'outlier.hdf5'
         d = np.arange(12, dtype=np.float32).reshape(6, 2)
-        d[2, 0] = np.nan
-        gtsdf.save(fn, d, dtype=np.float32)
+        d[2, 0] = 10 ** 3
+        d[3, 1] = 10 ** 3
+        self.assertRaises(Warning, gtsdf.save, fn, d)
         _, data, _ = gtsdf.load(fn)
-        np.testing.assert_array_almost_equal(data, d, 4)
+
+    def test_inf(self):
+        fn = self.f + 'outlier.hdf5'
+        d = np.arange(12, dtype=np.float32).reshape(6, 2)
+        d[2, 0] = np.inf
+        d[3, 1] = 10 ** 3
+        self.assertRaises(ValueError, gtsdf.save, fn, d)
+
 
 
 if __name__ == "__main__":

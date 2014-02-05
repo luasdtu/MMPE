@@ -4,8 +4,8 @@ Created on 29/10/2013
 @author: mmpe
 '''
 
-from hawc2ascii2bin import hawc2ascii2bin
-from hawc2ascii2bin.hawc2ascii2bin import ascii2bin, size_from_file
+
+from hawc2ascii2bin.ascii2bin import ascii2bin, size_from_file
 from hawc2ascii2bin.unit_test import Hawc2io
 import numpy as np
 import os

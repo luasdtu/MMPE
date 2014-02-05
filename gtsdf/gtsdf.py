@@ -4,7 +4,10 @@ Created on 12/09/2013
 @author: Mads M. Pedersen (mmpe@dtu.dk)
 '''
 from __future__ import division, print_function, absolute_import, unicode_literals
-import h5py
+try:
+    import h5py
+except ImportError as e:
+    raise ImportError("HDF5 library cannot be loaded. Windows XP is a known cause of this problem\n%s" % e)
 import os
 try: range = xrange; xrange = None
 except NameError: pass
@@ -183,13 +186,18 @@ def append_block(filename, data, **kwargs):
         if 'time_start' in kwargs:
             block.attrs['time_start'] = kwargs['time_start']
 
-
+        pct_res = np.array([1])
         if "int" in str(dtype):
+            if np.any(np.isinf(data)):
+                f.close()
+                raise ValueError ("Int compression does not support 'inf'\nConsider removing outliers or use float datatype")
             nan = np.isnan(data)
             non_nan_data = ma.masked_array(data, nan)
             offsets = np.min(non_nan_data, 0)
             data = np.copy(data)
             data -= offsets
+            with np.errstate(invalid='ignore'):  # ignore warning caused by abs(nan)
+                pct_res = (np.percentile(data, 75, 0) - np.percentile(data, 25, 0)) / np.nanmax(np.abs(data), 0)  # percent of resolution for middle half of data
             gains = np.max(non_nan_data - offsets, 0).astype(np.float64) / (np.iinfo(dtype).max - 1)  #-1 to save value for NaN
             not0 = np.where(gains != 0)
             data[:, not0] /= gains[not0]
@@ -203,11 +211,19 @@ def append_block(filename, data, **kwargs):
         block.create_dataset("data", data=data.astype(dtype))
         f.attrs['no_blocks'] = blocknr + 1
         f.close()
+
+        if "int" in str(dtype):
+            int_res = (np.iinfo(dtype).max - np.iinfo(dtype).min)
+            if min(pct_res[pct_res > 0]) * int_res < 256:
+                raise Warning("Less than 256 values are used to represent 50%% of the values in column(s): %s\nConsider removing outliers or use float datatype" % np.where(pct_res[pct_res > 0] * int_res < 256)[0])
+
     except AssertionError:
         f.close()
         raise
+
+
 def check_type(f):
     if 'type' not in f.attrs or f.attrs['type'].lower() != "general time series data format":
-            raise ValueError("HDF5 file must contain a 'type'-attribute with the value 'General time series data format'")
+        raise ValueError("HDF5 file must contain a 'type'-attribute with the value 'General time series data format'")
     if 'no_blocks' not in f.attrs:
         raise ValueError("HDF5 file must contain an attribute named 'no_blocks'")

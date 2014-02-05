@@ -22,7 +22,7 @@ class DualKeyDict(object):
     def __getitem__(self, key):
         obj = self._dict[key]
         if isinstance(obj, list):
-            raise ValueError("More objects associated by key, '%s'. Use 'get' function instead" % key)
+            raise ValueError("More objects associated by key, '%s'. Use 'get' function to get list of objects" % key)
         else:
             return obj
 

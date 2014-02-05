@@ -53,4 +53,10 @@ class TextUI(DaemonUI):
         else:
             print (msg)
 
+    def print_text(self, text):
+        print (text)
+
+    def console_text(self, text):
+        print (text)
+
 

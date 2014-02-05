@@ -28,7 +28,7 @@ def ascii2bin(ascii_selfilename, bin_selfilename=None, ui=textui.TextUI()):
     ascii_datfilename = ascii_selfilename.replace(".sel", '.dat')
     if bin_selfilename is None:
         bin_selfilename = ascii_selfilename[:-4] + "_bin.sel"
-    ui.show_message("Converting %s to %s" % (ascii_selfilename, bin_selfilename))
+    ui.show_message("Converting %s \nto\n %s" % (ascii_selfilename, bin_selfilename))
     cython_compile.cython_import('hawc2ascii2bin.cy_dat_ascii2bin')
     from hawc2ascii2bin.cy_dat_ascii2bin import dat_ascii2bin_progress
 

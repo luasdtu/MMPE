@@ -27,8 +27,6 @@ from MyQt import QtGui, QtCore, ui_compiler
 from build_cx_exe import exe_std_err
 import os
 import sys
-import time
-import win32ui
 
 
 class QtGuiLoader(object):
@@ -155,7 +153,6 @@ class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
             self.app.exec_()
 
     def terminate(self):
-
         QtGui.QApplication.quit()
 
     def closeEvent(self, *args, **kwargs):
@@ -164,7 +161,6 @@ class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
         clipboard = QtGui.QApplication.clipboard()
         event = QtCore.QEvent(QtCore.QEvent.Clipboard)
         QtGui.QApplication.sendEvent(clipboard, event)
-
         return QtGui.QMainWindow.closeEvent(self, *args, **kwargs)
 
 

@@ -9,8 +9,10 @@ from __future__ import division, print_function, absolute_import, \
     unicode_literals
 
 from heapq import heappush, heappop
+import string
 import sys
 
+from cython_compile.cython_compile import cython_compile
 from cython_compile.tests.mytimeit import print_time
 import numpy as np
 
@@ -56,18 +58,19 @@ class StringMatch(object):
 
     def get_score(self, A, B):
         scoreboard = np.zeros((len(A) + 1 , len(B) + 1))
-        for i, a in enumerate(A):
-            for j, b in enumerate(B):
-                score = self.score_function(a, b)
-                if score > 0:
-                    scoreboard[i, j] = scoreboard[i - 1, j - 1] + score
-                else:
-                    #penalty for skipping a character
-                    scoreboard[i, j] = max(scoreboard[i - 1, j], scoreboard[i, j - 1]) - 1 / (len(A) + len(B))
+        scoreboard[:, 0] = np.arange(len(A) + 1)
+        scoreboard[0, :] = np.arange(len(B) + 1)
+
+        for i, a in enumerate(A, 1):
+            for j, b in enumerate(B, 1):
+                distance = 1 - self.score_function(a, b)
+                scoreboard[i, j] = min([scoreboard[i - 1, j] + 1, scoreboard[i, j - 1] + 1, scoreboard[i - 1, j - 1] + distance])
+
 #        print ("%s[%s], %s[%s]: %.3f" % (A, a, B, b, scoreboard[i, j]))
 #        print ("\n".join([str(["%.3f" % v for v in row]) for row in scoreboard]))
 #        print ()
-        return scoreboard[i, j]
+
+        return (max(len(A), len(B)) - scoreboard[i, j])  # / max(len(A), len(B))
 
     def score_lst_sorted(self, string, lst, thresshold=0, include_scores=False):
         score_lst = []
@@ -106,17 +109,21 @@ class SmartMatch(StringMatch):
                 self.special_scores[a] = {}
             self.special_scores[a][b] = score
 
+        self.special_scores[' '] = { b:.8 for b in string.letters + string.digits}
+
+
         def score_function(a, b):
+            try:               return self.special_scores[a][b]
+            except KeyError: pass
+
+            try: return self.special_scores[b][a]
+            except KeyError: pass
+
             if a == b:
                 return 1
             elif a.lower() == b.lower():
                 return 0.9
-            try:
-                if a > b:
-                    a, b = b, a
-                return self.special_scores[a][b]
-            except KeyError:
-                return .000
+            return .000
         StringMatch.__init__(self, score_function)
 
 
