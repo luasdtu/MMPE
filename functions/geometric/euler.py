@@ -42,6 +42,9 @@ def xyz2euler(x, y, z):
                      np.sin(.5 * (z + x)) * np.sin(.5 * y),
                      np.sin(.5 * (z + x)) * np.cos(.5 * y)])
 
+def xyz2A(x, y, z):
+    return euler2A(xyz2euler(x, y, z))
+
 def euler2xyz(euler):
     return A2xyz(euler2A(euler))
 

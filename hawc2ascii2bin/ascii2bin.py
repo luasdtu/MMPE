@@ -3,7 +3,8 @@ from __future__ import division, print_function, absolute_import, \
 
 import sys
 from hawc2ascii2bin.pandas_dat_ascii2bin import pandas_dat_ascii2bin
-import textui
+from ui import text_ui
+
 try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
@@ -18,7 +19,7 @@ def size_from_file(selfilename):
         no_sensors = int(info[1])
     return (scans, no_sensors)
 
-def ascii2bin(ascii_selfilename, bin_selfilename=None, ui=textui.TextUI()):
+def ascii2bin(ascii_selfilename, bin_selfilename=None, ui=text_ui.TextUI()):
 
     # Convert dat file
     ascii_datfilename = ascii_selfilename.replace(".sel", '.dat')

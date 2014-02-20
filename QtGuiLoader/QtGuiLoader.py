@@ -5,8 +5,11 @@ Examples of how to use can be found in UseQtGuiLoader.py
 
 @Created on 13/3/2013
 @modified
-@version:1.7 (1/10-2013)
-@change: 1.7 Supports both PyQt4 and PySide
+@version:1.9 (18/2-2014)
+@change: 1.8 Compile code changed again
+             Autogeneration of missing action handlers
+         1.8 os.environ.get('path', "") instead of os.environ['path'] to avoid error if path variable not exists (e.g. on linux)
+         1.7 Supports both PyQt4 and PySide
          1.6 python + python/scripts path appended to os.environ['path']
              'WINPYDIR' appended to os.environ
              basename set relative to cwd
@@ -23,10 +26,12 @@ Examples of how to use can be found in UseQtGuiLoader.py
 '''
 
 
-from MyQt import QtGui, QtCore, ui_compiler
+from MyQt import QtGui, QtCore, ui_compiler, ui_compile_func
 from build_cx_exe import exe_std_err
 import os
 import sys
+import imp
+import inspect
 
 
 class QtGuiLoader(object):
@@ -44,10 +49,12 @@ class QtGuiLoader(object):
                 print ("compile %s > %s" % (ui_file, py_file))
                 exe_dir = os.path.dirname(sys.executable)
 
-                os.environ['path'] = "%s;%s;%s/scripts" % (os.environ['path'], exe_dir, exe_dir)
-                os.environ['WINPYDIR'] = exe_dir
-                os.system("%s %s > %s" % (ui_compiler, ui_file, py_file))
-        reload(ui_module)
+                #ui_compile_func(ui_file, py_file)
+                #os.system("%s %s > %s" % (ui_compiler, ui_file, py_file))
+#                pyuic_path = os.path.join(os.path.dirname(sys.executable), 'Lib/site-packages/PyQt4/uic/pyuic.py')
+#                os.system("%s %s %s > %s" % (sys.executable, pyuic_path, ui_file, py_file))
+                ui_compile_func(ui_file, py_file)
+        imp.reload(ui_module)
 
     def connect_actions(self, action_receiver=None):
         for name, action in [(n, a) for n, a in vars(self.ui).items() if isinstance(a, QtGui.QAction)]:
@@ -56,7 +63,22 @@ class QtGuiLoader(object):
             if hasattr(action_receiver, name):
                 QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), getattr(action_receiver, name))
             elif action.receivers(QtCore.SIGNAL("triggered()")) == 0:
-                raise Warning("Action %s not connected. Method with name '%s' not found" % (action.text(), name))
+                try:
+                    source_file = inspect.getsourcefile(self.__class__)
+                    class_source = inspect.getsource(self.__class__)
+                    func_source = """
+    def %s(self):
+        #Auto implemented action handler
+        raise NotImplementedError
+""" % name
+
+                    with open(source_file, 'r+') as fid:
+                        source = fid.read().replace(class_source, class_source + func_source)
+                        fid.seek(0)
+                        fid.write(source)
+                    print ("Missing method '%s' appended to class %s" % (name, self.__class__.__name__))
+                except:
+                    raise Warning("Action %s not connected. Method with name '%s' not found and autogeneration failed" % (action.text(), name))
 
     def setupUI(self, widget):
         self.ui.setupUi(widget)
@@ -96,7 +118,8 @@ class QtGuiApplication(object):
             geometry = geometry.toByteArray()
         except:
             pass  # Fails in PySide
-        self.restoreGeometry(geometry)
+        if geometry:
+            self.restoreGeometry(geometry)
 
     def save_setting(self, key, value):
         settings = QtCore.QSettings("QtGuiApplication", "%s_%s" % (self.app_name, self.__class__.__name__))

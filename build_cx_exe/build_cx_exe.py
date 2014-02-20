@@ -32,7 +32,7 @@ def build_exe(filename, version="1.0.0", description="", author="", modules=[NUM
     os.remove('setup.py')
     clean(modules)
 
-    print "distribution created (%s/)" % ("../%s_dist" % basename)
+    print ("distribution created (%s/)" % ("../%s_dist" % basename))
 
 def build_msi(filename, version, description="", author=""):
     basename = filename.replace('.py', '')
@@ -48,7 +48,7 @@ def build_msi(filename, version, description="", author=""):
     shutil.rmtree('build')
     shutil.rmtree('dist')
 
-    print "Installer created (%s/)" % (folder)
+    print ("Installer created (%s/)" % (folder))
 
 
 def write_setup(name, version, description="", author="", modules=[NUMPY], includes=[], packages="[]", include_files=[], icon=None):

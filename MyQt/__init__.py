@@ -20,9 +20,15 @@ if gui == "pyqt":
         except:
             pass
         ui_compiler = "pyuic4"
+        uic = __import__('PyQt4.uic')
+
+        def ui_compile_func(ui_file, py_file):
+            pyuic_path = os.path.join(os.path.dirname(sys.executable), 'Lib/site-packages/PyQt4/uic/pyuic.py')
+            os.system("%s %s %s > %s" % (sys.executable, pyuic_path, ui_file, py_file))
+        #ui_compile_func = lambda ui_file, py_file : uic.uic.compileUi(ui_file, open(py_file, 'w'))
     except:
         gui = "pyside"
-if gui == "pyside":
+elif gui == "pyside":
     os.environ['QT_API'] = gui
     QtCore = __import__("PySide.QtCore").QtCore
     QtGui = __import__("PySide.QtGui").QtGui
@@ -31,12 +37,14 @@ if gui == "pyside":
     except:
         pass
     ui_compiler = "pyside-uic"
+    ui_compile_func = lambda ui_file, py_file: os.system("%s %s > %s" % (ui_compiler, ui_file, py_file))
+
 
 if gui == "none":
     QtCore = None
     QtGui = None
 
-print "Using gui: " + gui
+#print ("Using gui: " + gui)
 
 
 ###elif gui==NONE:

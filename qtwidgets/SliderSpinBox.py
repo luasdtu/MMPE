@@ -5,7 +5,7 @@ Created on 21/05/2013
 '''
 from __future__ import division, absolute_import, unicode_literals
 from MyQt import QtCore, QtGui
-
+from MyQt.QtCore import pyqtSignal
 try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
@@ -17,7 +17,7 @@ import sys
 
 
 class SliderSpinBox(QtGui.QWidget):
-    valueChanged = QtCore.pyqtSignal(float)
+    valueChanged = pyqtSignal(float)
 
     def __init__(self, parent=None, value_range=(0, 100), slider_steps=100, spinbox_steps=1000):
         QtGui.QWidget.__init__(self, parent)
@@ -26,8 +26,9 @@ class SliderSpinBox(QtGui.QWidget):
         self.horizontalSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.doubleSpinBox = QtGui.QDoubleSpinBox(self)
         layout.setMargin(0)
-        layout.addWidget(self.horizontalSlider)
         layout.addWidget(self.doubleSpinBox)
+        layout.addWidget(self.horizontalSlider)
+
         self.doubleSpinBox.valueChanged.connect(self.spinbox_changed)
         self.horizontalSlider.valueChanged.connect(self.slider_changed)
 
@@ -109,8 +110,8 @@ class LogaritmicSliderSpinBox(SliderSpinBox):
 
 class PolynomialSliderSpinBox(SliderSpinBox):
 
-    def __init__(self, parent=None, order=2, value_range=(0, 1000), slider_steps=100):
-        SliderSpinBox.__init__(self, parent=parent, value_range=value_range, slider_steps=slider_steps, spinbox_steps=value_range[1] / value_range[0])
+    def __init__(self, parent=None, order=2, value_range=(0, 1000), slider_steps=100, spinbox_steps=1000):
+        SliderSpinBox.__init__(self, parent=parent, value_range=value_range, slider_steps=slider_steps, spinbox_steps=spinbox_steps)
         self.coef = [(value_range[1] - value_range[0]) / slider_steps ** order, value_range[0]]
         self.order = order
 
@@ -122,7 +123,7 @@ class PolynomialSliderSpinBox(SliderSpinBox):
             value = self.coef[0] * value ** self.order + self.coef[1]
             #value = 10 ** (_min + (float(value) * (_max - _min) / self.slider_steps))
 
-            #self.doubleSpinBox.setValue(value)
+            self.doubleSpinBox.setValue(value)
             self.changer = None
             self.value_changed(value)
 
@@ -131,7 +132,9 @@ class PolynomialSliderSpinBox(SliderSpinBox):
             self.changer = 'spinbox'
 
             _min, _max = np.log10(self.value_range[0]), np.log10(self.value_range[1])
-            slider_value = (np.log10(value) - _min) * self.slider_steps / (_max - _min)
+
+
+            slider_value = int(((value - self.coef[1]) / self.coef[0]) ** (1 / self.order))
             self.horizontalSlider.setValue(slider_value)
             self.changer = None
             self.value_changed(value)
@@ -171,9 +174,10 @@ if __name__ == '__main__':
     vlayout = QtGui.QVBoxLayout(w)
     s_log = LogaritmicSliderSpinBox(m, slider_steps=100)
     s_lin = SliderSpinBox(m, slider_steps=100)
-    s_pol = PolynomialSliderSpinBox(m, 2, slider_steps=100)
-    vlayout.addWidget(s_log)
+    s_pol = PolynomialSliderSpinBox(m, 2, slider_steps=100, spinbox_steps=1000)
     vlayout.addWidget(s_lin)
+    vlayout.addWidget(s_log)
+    vlayout.addWidget(s_pol)
     #m.setCentralWidget(s)
 
     s_log.set_range((0.001, 1000))

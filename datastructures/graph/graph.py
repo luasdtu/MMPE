@@ -34,10 +34,10 @@ class Tree(dict):
 
     def _to_lst(self, parent=None):
         lst = []
-        for n, t in self.items():
+        for n in sorted(self.keys()):
             if parent is not None:
                 lst.append((parent, n, self.graph.relations[parent][n]))
-            lst.extend(t._to_lst(n))
+            lst.extend(self[n]._to_lst(n))
         return lst
 
     def to_str(self):
@@ -45,12 +45,12 @@ class Tree(dict):
 
     def _to_str(self, parent=None, level=0):
         s = ""
-        for n, t in self.items():
+        for n in sorted(self.keys()):
             if self.graph and parent and self.graph.relations[parent][n]:
                 s += "- "*level + "%s(%s)\n" % (n, self.graph.relations[parent][n])
             else:
                 s += "- "*level + "%s\n" % n
-            s += t._to_str(n, level + 1)
+            s += self[n]._to_str(n, level + 1)
         return s
 
 class Forest(Tree):
