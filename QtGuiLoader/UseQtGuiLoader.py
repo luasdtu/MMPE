@@ -17,35 +17,46 @@ import sys
 """Use as MainWindow"""
 class MyMainWindow(QtMainWindowLoader):
     def __init__(self, parent=None):
-        QtMainWindowLoader.__init__(self, ui_module=MyWidgetUI)
+        ui_module = MyWidgetUI
+        try: self.ui = ui_module.Ui_Form()  #enable autocomplete
+        except: pass
+        QtMainWindowLoader.__init__(self, ui_module)
         self.ui.lineEdit.setText("MyMainWindow")
         self.setWindowTitle("MyMainWindow")
 
     def actionPrintText(self):
         print "Mainwindow text: %s" % self.ui.lineEdit.text()
 #run using
-#MyMainWindow().start()
+#if __name__=="__main__":
+#    MyMainWindow().start()
 
 
 """Use as Dialog (i.e. sub window, that closes with parent)"""
 class MyDialog(QtDialogLoader):
     def __init__(self, parent, modal):
-        QtDialogLoader.__init__(self, MyWidgetUI, parent, modal)
+        ui_module = MyWidgetUI
+        try: self.ui = ui_module.Ui_Form()  #enable autocomplete
+        except: pass
+        QtDialogLoader.__init__(self, ui_module, parent, modal)
         self.ui.lineEdit.setText("MyDialog")
         self.setWindowTitle("MyDialog")
 
     def actionPrintText(self):
         print "Dialog text: %s" % self.ui.lineEdit.text()
 ##run using
-#MyDialog(None,True,True).start()
+#if __name__=="__main__":
+#    MyDialog(None,True).start()
 
 
 
 """Use as ui_widget with actionhandlers at parent(e.g. QMainWindow) subclass """
 class WidgetWindow(QtGui.QMainWindow):
     def __init__(self, *args, **kwargs):
+        ui_module = MyWidgetUI
+        try: self.ui = ui_module.Ui_Form()  #enable autocomplete
+        except: pass
         QtGui.QMainWindow.__init__(self, *args, **kwargs)
-        self.widget = QtWidgetLoader(ui_module=MyWidgetUI, parent=self, action_receiver=self)
+        self.widget = QtWidgetLoader(ui_module=ui_module, parent=self, action_receiver=self)
         self.widget.ui.lineEdit.setText("MyWidget")
         self.show()
 
@@ -54,17 +65,21 @@ class WidgetWindow(QtGui.QMainWindow):
 
 
 # #Run using:
-# app = QtGui.QApplication(sys.argv)
-# w = WidgetWindow()
-# print w
-# app.exec_()
+#if __name__=="__main__":
+#    app = QtGui.QApplication(sys.argv)
+#    w = WidgetWindow()
+#    print w
+#    app.exec_()
 
 
 """Use as _ui_widget with actionhandlers in ui_widget subclass"""
 class MyWidget(QtWidgetLoader):
 
     def __init__(self, parent):
-        QtWidgetLoader.__init__(self, ui_module=MyWidgetUI, parent=parent)
+        ui_module = MyWidgetUI
+        try: self.ui = ui_module.Ui_Form()  #enable autocomplete
+        except: pass
+        QtWidgetLoader.__init__(self, ui_module, parent=parent)
         self.ui.lineEdit.setText("MyWidget")
 
     def actionPrintText(self):
