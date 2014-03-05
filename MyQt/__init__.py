@@ -6,7 +6,7 @@ QtCore = None
 QtGui = None
 QSci = None
 ui_compiler = None
-
+ui_compile_func = None
 import sys
 import os
 gui = os.environ.get('QT_API', "pyqt")
@@ -40,10 +40,10 @@ elif gui == "pyside":
     ui_compile_func = lambda ui_file, py_file: os.system("%s %s > %s" % (ui_compiler, ui_file, py_file))
 
 
-if gui == "none":
+elif gui == "none":
     QtCore = None
     QtGui = None
-
+    ui_compile_func = None
 #print ("Using gui: " + gui)
 
 

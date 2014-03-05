@@ -48,11 +48,11 @@ def _compile_all(path, compiler):
         else:
             #print "%s: ok" % py_file
             pass
-    print "Finish compiling UI"
+    print ("Finish compiling UI")
 
 
 def compile_all(path="."):
-    print "ui_compiler" + ui_compiler
+    print ("ui_compiler" + ui_compiler)
     _compile_all(path, ui_compiler)
 
 def compile_all_pyqt(path="."):
@@ -66,5 +66,5 @@ def compile_all_pyside(path="."):
 if "__main__" == __name__:
     import os
     path = r"C:\mmpe\python\pydap_redmine\trunk"
-    print os.path.realpath(path)
+    print (os.path.realpath(path))
     compile_all_pyside(path)

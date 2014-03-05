@@ -5,6 +5,10 @@ import time
 from MyQt import QtCore, QtGui
 import threading
 import inspect
+try:
+    from MyQt.QtCore import QString
+except:
+    QString = str
 
 
 class CancelWarning(Warning):
@@ -20,11 +24,15 @@ class QtProgressInformation(object):
 
 
     def __show(self, text, allow_cancel, max_value=0):
+        if not hasattr(self, '_progressDialog'):
+            raise Exception ("%s inheriting QtProgressInformation must call QtProgressInformation.__init__" % self.__class__.__name__)
         self._progressDialog.reset()  #reset cancel flag
         self._progressDialog.setWindowTitle(text)
         self._progressDialog.setMaximum(max_value)
-        cancel_text = ("", "Cancel")[allow_cancel]
+
+        cancel_text = (QString(), "Cancel")[allow_cancel]
         self._progressDialog.setCancelButtonText(cancel_text)
+        self._progressDialog
         self._progressDialog.show()
 
     def __hide(self):
@@ -99,18 +107,17 @@ class QtProgressInformation(object):
 def long_task(parent=None, text="Working", allow_cancel=False):
     def wrap(task):
         def taskWrapper(*args, **kwargs):
-            return ProgressInformation(_parent).exec_long_task(text, allow_cancel, task, *args, **kwargs)
+            return QtProgressInformation(parent).exec_long_task(text, allow_cancel, task, *args, **kwargs)
         return taskWrapper
     return wrap
 
 
 #
 if __name__ == "__main__":
-
-    class MW(QtGui.QMainWindow, ProgressInformation):
+    class MW(QtGui.QMainWindow, QtProgressInformation):
         def __init__(self):
             QtGui.QMainWindow.__init__(self)
-            ProgressInformation.__init__(self, self)
+            QtProgressInformation.__init__(self, self)
 
 
         def mouseDoubleClickEvent(self, *args, **kwargs):

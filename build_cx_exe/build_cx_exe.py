@@ -4,12 +4,12 @@ Created on 21/01/2013
 @author: Mads
 '''
 import glob
-import matplotlib
 import os
 import shutil
 import sys
 import time
 import zipfile
+from functions.io import make_dirs
 NUMPY = 'numpy'
 MATPLOTLIB = 'matplotlib'
 GUIDATA = 'guidata'
@@ -18,6 +18,10 @@ PYSIDE = 'PySide'
 SCIPY = 'scipy'
 CTYPES = '_ctypes'
 MULTIPROCESSING = '_multiprocessing'
+DOCX = "docx"
+OPENGL = "_opengl"
+PIL = "PIL"
+HDF5 = "h5py"
 
 def build_exe(filename, version="1.0.0", description="", author="", modules=[NUMPY], includes=[], packages="[]", include_files=[], icon=None):
     basename = filename.replace('.py', '')
@@ -57,14 +61,16 @@ def write_setup(name, version, description="", author="", modules=[NUMPY], inclu
     """"includes":["sip"],"""
     imports = []
     base = ""
-    excludes = ['PyQt4.uic.port_v3', 'Tkconstants', 'tcl', 'tk', 'doctest', '_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger', 'pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter',
-                'tables', 'zmq', 'win32', 'Pythonwin', 'PySide', 'Cython', 'statmodels', 'cvxopt', 'PIL', '_sqlite3', '_ssl', '_testcapi',
-                'markupsafe', 'numexpr', '_elementtree', '_hashlib', '_testcapi', 'bz2', 'simplejson', 'pyexpat',
-                MATPLOTLIB, GUIDATA, PYQT4, PYSIDE, SCIPY, NUMPY, MULTIPROCESSING, CTYPES]
+    excludes = ['PyQt4.uic.port_v3', 'Tkconstants', 'tcl', 'tk', 'doctest', '_gtkagg', '_tkagg', 'bsddb',
+                'curses', 'email', 'pywin.debugger', 'pywin.debugger.dbgcon', 'pywin.dialogs', 'Tkinter',
+                'tables', 'zmq', 'win32', 'Pythonwin', 'Cython', 'statmodels', 'cvxopt', '_sqlite3', '_ssl', '_testcapi',
+                'markupsafe', 'numexpr', '_elementtree', '_hashlib', '_testcapi', 'bz2', 'simplejson', 'pyexpat', "lxml",
+                MATPLOTLIB, GUIDATA, PYQT4, PYSIDE, SCIPY, NUMPY, MULTIPROCESSING, CTYPES, DOCX, OPENGL, PIL, HDF5]
     #'pandas', '_socket', 'sip',
     if MATPLOTLIB in modules:
         include_files.append("""( matplotlib.get_data_path(),"mpl-data")""")
         imports.append("import matplotlib")
+        excludes.remove('email')  #py3_64
 
     if GUIDATA in modules:
         include_files.append("'guidata/images/'")
@@ -76,6 +82,33 @@ def write_setup(name, version, description="", author="", modules=[NUMPY], inclu
         imports.append("import scipy.sparse.csgraph")
         includes.append("""'scipy.sparse.csgraph._validation', 'scipy.sparse.linalg.dsolve.umfpack',
         'scipy.integrate.vode', 'scipy.integrate._ode','scipy.integrate.lsoda'""")
+        includes.append("'scipy.special._ufuncs_cxx'")  #py3_64
+        from scipy.sparse.sparsetools import csr, csc, coo, dia, bsr, csgraph
+
+        for f in [csr._csr.__file__,
+                  csc._csc.__file__,
+                  coo._coo.__file__,
+                  dia._dia.__file__,
+                  bsr._bsr.__file__,
+                  csgraph._csgraph.__file__]:
+            shutil.copy(f, os.path.basename(f))
+            include_files.append("'%s'" % os.path.basename(f))
+
+    if DOCX in modules:
+        include_files.append("'functions/docx_document/docx-template_clean/'")
+        include_files.append("'functions/docx_document/inkscape/'")
+        includes.append("'lxml._elementpath'")
+        excludes.remove("lxml")
+    if OPENGL in modules:
+        includes.append("'OpenGL.platform.win32'")
+
+    if HDF5 in modules:
+        from h5py import _conv, _errors, _objects, _proxy, defs, h5, h5a, h5d, h5ds, h5f, h5fd, h5g, h5i, h5l, h5o, h5p, h5r, h5s, h5t, h5z, utils
+        #for f in [_conv, _errors, _objects, _proxy, defs, h5, h5a, h5d, h5ds, h5f, h5fd, h5g, h5i, h5l, h5o, h5p, h5r, h5s, h5t, h5z, utils]:
+        #    f = f.__file__
+        #    shutil.copy(f, "h5py." + os.path.basename(f))
+        #    include_files.append("'h5py.%s'" % os.path.basename(f))
+        includes.extend(["'h5py.defs'", "'h5py.utils'", "'h5py._proxy'"])
 
     for m in modules:
         excludes.remove(m)
@@ -113,6 +146,7 @@ executables = [Executable("%s.py", %s%sshortcutName="%s", shortcutDir="DesktopFo
 
 
 def prepare(modules):
+    clean(modules)
     if GUIDATA in modules:
         if not os.path.isdir("guidata"):
             os.mkdir("guidata/")
@@ -120,6 +154,14 @@ def prepare(modules):
             shutil.copytree(r"%s/Lib/site-packages/guidata/images/" % os.path.dirname(sys.executable), "guidata/images/")
     if PYQT4 in modules:
         copy_imageformats()
+    if DOCX in modules:
+        from functions.docx_document import docx_document
+        source_path = os.path.dirname(docx_document.__file__)
+        dest_path = "functions/docx_document/"
+        make_dirs(dest_path)
+        for folder in ['docx-template_clean', 'inkscape']:
+            shutil.copytree(os.path.join(source_path, folder), os.path.join(dest_path, folder))
+
 
 
 def clean(modules):
@@ -129,6 +171,21 @@ def clean(modules):
     if PYQT4 in modules:
         if os.path.isdir('imageformats'):
             shutil.rmtree('imageformats/')
+    if DOCX in modules:
+        if os.path.isdir('functions'):
+            shutil.rmtree('functions')
+    if SCIPY in modules:
+        from scipy.sparse.sparsetools import csr, csc, coo, dia, bsr, csgraph
+        for f in [csr._csr.__file__,
+                  csc._csc.__file__,
+                  coo._coo.__file__,
+                  dia._dia.__file__,
+                  bsr._bsr.__file__,
+                  csgraph._csgraph.__file__]:
+            if os.path.isfile(os.path.basename(f)):
+                os.remove(os.path.basename(f))
+
+
 
 def copy_imageformats():
     """

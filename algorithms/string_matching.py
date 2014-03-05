@@ -10,10 +10,6 @@ from __future__ import division, print_function, absolute_import, \
 
 from heapq import heappush, heappop
 import string
-import sys
-
-from cython_compile.cython_compile import cython_compile
-from cython_compile.tests.mytimeit import print_time
 import numpy as np
 
 

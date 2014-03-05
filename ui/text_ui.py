@@ -9,9 +9,7 @@ try: str = unicode; unicode = None
 except NameError: pass
 
 
-class TextOutputUI(object):
-    def show_error(self, msg, title="Error"):
-        print(title, msg)
+class TextOutputUI(DaemonUI):
 
     def show_message(self, msg, title="Information"):
         if title != "":
@@ -24,6 +22,26 @@ class TextOutputUI(object):
 
     def show_text(self, text):
         print (text)
+
+class TextInputUI(object):
+    def get_confirmation(self, title, msg):
+        raise NotImplementedError
+
+    def get_string(self, title, msg):
+        raise NotImplementedError
+
+    def get_open_filename(self, title="Open", filetype_filter="*.*", file_dir=None, selected_filter=None):
+        raise NotImplementedError
+    def get_save_filename(self, title, filetype_filter, file_dir=None, selected_filter=None):
+        raise NotImplementedError
+
+
+    def get_open_filenames(self, title, filetype_filter, file_dir=None):
+        raise NotImplementedError
+
+    def get_foldername(self, title='Select directory', file_dir=None):
+        raise NotImplementedError
+
 
 
 class TextStatusUI(object):
@@ -53,5 +71,5 @@ class TextStatusUI(object):
 
 
 
-class TextUI(TextOutputUI, TextStatusUI):
+class TextUI(TextOutputUI, TextInputUI, TextStatusUI):
     pass

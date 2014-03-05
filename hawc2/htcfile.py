@@ -6,6 +6,8 @@ Created on 20/01/2014
 
 from __future__ import division, absolute_import, unicode_literals
 from collections import OrderedDict
+import os
+import time
 try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
@@ -17,6 +19,7 @@ class HTCFile(object):
     def __init__(self, filename):
         self.filename = filename
         self.lines = []
+
         with open(filename) as fid:
             for l in fid.readlines():
                 if ";" in l and len(l.strip()) != 1:

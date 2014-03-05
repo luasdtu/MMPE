@@ -10,9 +10,21 @@ class QtOutputUI(object):
         QMessageBox.information(self, title, msg)
 
     def show_warning(self, msg, title="Warning"):
+        """Show a warning dialog box
+        msg: Error message or Warning object
+        """
+        if isinstance(msg, Warning):
+            title = msg.__class__.__name__
+            msg = str(msg)
         QMessageBox.warning(self, title, msg)
 
     def show_error(self, msg, title="Error"):
+        """Show a warning dialog box
+        msg: Error message or Exception object
+        """
+        if isinstance(msg, Exception):
+            title = msg.__class__.__name__
+            msg = str(msg)
         QMessageBox.critical(self, title, msg)
 
     def show_text(self, text):
@@ -49,7 +61,7 @@ class QtInputUI(object):
     def get_save_filename(self, title, filetype_filter, file_dir=None, selected_filter=None):
         """
         fn = gui.get_save_filename(title="title", filetype_filter="*.dit1;*dit2;;*.dat", file_dir=".", selected_filter="*.dat")
-        if fn == "": cencel
+        if fn == "": return #cancel
         """
         file_dir = self._default_dir(str(file_dir))
         r = str(QFileDialog.getSaveFileName(self, title, file_dir, filetype_filter, selected_filter))
@@ -79,11 +91,11 @@ class QtInputUI(object):
             self.save_setting("default_dir", os.path.dirname(r[0]))
         return r
 
-    def get_folder_name(self, title='Select directory', file_dir=None):
+    def get_foldername(self, title='Select directory', file_dir=None):
         file_dir = self._default_dir(file_dir)
-        r = str(QFileDialog.getExistingDirectory(self, title)).replace('\\', '/')
-        if len(r) > 0:
-            self.save_setting("default_dir", os.path.dirname(r[0]))
+        r = str(QFileDialog.getExistingDirectory(self, title, file_dir)).replace('\\', '/')
+        if os.path.isdir(r):
+            self.save_setting("default_dir", r)
         return r
 
 
@@ -96,11 +108,11 @@ class QtStatusUI(QtProgressInformation):
 
     def start_wait(self):
         """Changes mouse icon to waitcursor"""
-        QtCore.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
     def end_wait(self):
         """Restores default mouse icon"""
-        QtCore.QApplication.restoreOverrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
 
 
 class QtUI(QtOutputUI, QtInputUI, QtStatusUI):

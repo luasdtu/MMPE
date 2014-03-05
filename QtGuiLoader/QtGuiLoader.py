@@ -26,12 +26,12 @@ Examples of how to use can be found in UseQtGuiLoader.py
 '''
 
 
-from MyQt import QtGui, QtCore, ui_compiler, ui_compile_func
-from build_cx_exe import exe_std_err
+from MyQt import QtGui, QtCore, ui_compile_func
 import os
 import sys
 import imp
 import inspect
+from build_cx_exe import exe_std_err
 
 
 class QtGuiLoader(object):
