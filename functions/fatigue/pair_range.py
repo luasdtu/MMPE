@@ -67,3 +67,10 @@ def pair_range(x):  # cpdef pair_range(np.ndarray[long,ndim=1]  x):
             # A[ampl]+=1
             flow.append(ampl)
     return flow
+
+
+
+
+
+
+
