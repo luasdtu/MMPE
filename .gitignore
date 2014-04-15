@@ -218,3 +218,6 @@ pip-log.txt
 *dist/
 
 
+/ui/scripting_window/docs/sphinx/_templates
+/ui/scripting_window/docs/sphinx/_build
+/ui/scripting_window/docs/sphinx/_static

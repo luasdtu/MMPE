@@ -127,7 +127,7 @@ if __name__ == '__main__':
         print (txt)
     m = QtGui.QMainWindow()
     def new_widget():
-        return QtGui.QPushButton("hej")
+        return QtGui.QPushButton("hello")
     t = TabWidget(new_widget)
 
     m.setCentralWidget(t)

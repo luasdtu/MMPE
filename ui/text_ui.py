@@ -2,18 +2,18 @@
 from __future__ import division, print_function, absolute_import, \
     unicode_literals
 import sys
-from ui.daemon_ui import DaemonUI
+from ui.daemon_ui import DaemonUI, DaemonOutputUI
 try: range = xrange; xrange = None
 except NameError: pass
 try: str = unicode; unicode = None
 except NameError: pass
 
 
-class TextOutputUI(DaemonUI):
+class TextOutputUI(DaemonOutputUI):
 
     def show_message(self, msg, title="Information"):
         if title != "":
-            print ("%s\n%s\n%s" % (title, "-"*len(title), msg))
+            print ("\n\n%s\n%s\n%s\n" % (title, "-"*len(title), msg))
         else:
             print (msg)
 

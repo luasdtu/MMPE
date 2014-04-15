@@ -3,11 +3,37 @@ import os
 from MyQt import QtGui, QtCore
 from MyQt.QtGui import QMessageBox, QFileDialog
 from ui.qt_progress_information import QtProgressInformation
+import sys
+import traceback
 
 
 class QtOutputUI(object):
+    show_traceback = False
+
+    def __init__(self):
+        sys.stderr = self.show_error
+
+    def run(self, f, *args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Warning as e:
+            self.show_warning(e)
+        except Exception as e:
+            self.show_error(e)
+            raise
+
+    def show_box(self, box_func):
+        cursor = QtGui.QApplication.overrideCursor()
+        QtGui.QApplication.restoreOverrideCursor()
+        box_func()
+        if cursor and isinstance(cursor, QtGui.QCursor) and cursor.shape() == QtCore.Qt.WaitCursor:
+            QtGui.QApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+        QtGui.QApplication.processEvents()
+
+
+
     def show_message(self, msg, title="Information"):
-        QMessageBox.information(self, title, msg)
+        self.show_box(lambda : QMessageBox.information(self, title, msg))
 
     def show_warning(self, msg, title="Warning"):
         """Show a warning dialog box
@@ -16,16 +42,20 @@ class QtOutputUI(object):
         if isinstance(msg, Warning):
             title = msg.__class__.__name__
             msg = str(msg)
-        QMessageBox.warning(self, title, msg)
+
+        self.show_box(lambda : QMessageBox.warning(self, title, msg))
 
     def show_error(self, msg, title="Error"):
         """Show a warning dialog box
         msg: Error message or Exception object
         """
         if isinstance(msg, Exception):
-            title = msg.__class__.__name__
-            msg = str(msg)
-        QMessageBox.critical(self, title, msg)
+            e = msg
+            title = e.__class__.__name__
+            msg = str(e)
+            if self.show_traceback:
+                msg += "\n" + traceback.format_exc()
+        self.show_box(lambda : QMessageBox.critical(self, title, msg))
 
     def show_text(self, text):
         raise NotImplementedError
@@ -91,7 +121,7 @@ class QtInputUI(object):
             self.save_setting("default_dir", os.path.dirname(r[0]))
         return r
 
-    def get_foldername(self, title='Select directory', file_dir=None):
+    def get_foldername(self, title='Select folder', file_dir=None):
         file_dir = self._default_dir(file_dir)
         r = str(QFileDialog.getExistingDirectory(self, title, file_dir)).replace('\\', '/')
         if os.path.isdir(r):
@@ -103,6 +133,7 @@ class QtInputUI(object):
 
 
 class QtStatusUI(QtProgressInformation):
+
     def __init__(self, parent):
         QtProgressInformation.__init__(self, parent)
 

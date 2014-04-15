@@ -5,6 +5,7 @@ import time
 from MyQt import QtCore, QtGui
 import threading
 import inspect
+import collections
 try:
     from MyQt.QtCore import QString
 except:
@@ -19,8 +20,10 @@ class QtProgressInformation(object):
     def __init__(self, parent):
         self._parent = parent
         self._progressDialog = QtGui.QProgressDialog(self._parent)
+        self._progressDialog.setMinimumWidth(300)
         self._progressDialog.setWindowModality(QtCore.Qt.ApplicationModal)
         self._progressDialog.setMinimumDuration(0)
+        self.progress_iterator = lambda seq, text = "Working... Please wait", allow_cancel = True, self = self : self.QtProgressIterator(self, seq, text, allow_cancel)
 
 
     def __show(self, text, allow_cancel, max_value=0):
@@ -34,20 +37,56 @@ class QtProgressInformation(object):
         self._progressDialog.setCancelButtonText(cancel_text)
         self._progressDialog
         self._progressDialog.show()
+        QtGui.QApplication.processEvents()
 
     def __hide(self):
         self._progressDialog.hide()
+        self._progressDialog.close()
+        QtGui.QApplication.processEvents()
 
-    def progress_iterator(self, sequence, text="Working... Please wait", allow_cancel=True):
-        it = iter(sequence)
-        if it.__length_hint__() > 0:
-            self.__show(text, allow_cancel, it.__length_hint__())
-            for n, v in enumerate(it):
-                if allow_cancel and self._progressDialog.wasCanceled():
-                    raise CancelWarning()
-                self._progressDialog.setValue(n)
-                yield(v)
-            self._progressDialog.hide()
+    class QtProgressIterator(collections.Iterator):
+        def __init__(self, QtProgressInformation, seq, text, allow_cancel=True):
+            self.QtProgressInformation = QtProgressInformation
+            self.generator = iter(seq)
+
+            self.allow_cancel = allow_cancel
+            self.n = 0
+            self.QtProgressInformation._QtProgressInformation__show(text, allow_cancel, self.generator.__length_hint__())
+
+
+        def __del__(self):
+                self.QtProgressInformation._QtProgressInformation__hide()
+                pass
+
+        def __iter__(self):
+                return self
+
+        def next(self):
+            # required by python 2
+            return self.__next__()
+
+        def __next__(self):
+            if self.allow_cancel and self.QtProgressInformation._progressDialog.wasCanceled():
+                raise CancelWarning()
+            self.QtProgressInformation._progressDialog.setValue(self.n)
+            self.n += 1
+            try:
+                return self.generator.__next__()
+            except AttributeError:
+                return self.generator.next()  #in python 2, iterators __next__ is named next
+
+
+#    def progress_iterator(self, sequence, text="Working... Please wait", allow_cancel=True):
+#        it = iter(sequence)
+#        if it.__length_hint__() > 0:
+#            self.__show(text, allow_cancel, it.__length_hint__())
+#            for n, v in enumerate(it):
+#                if allow_cancel and self._progressDialog.wasCanceled():
+#                    raise CancelWarning()
+#                self._progressDialog.setValue(n)
+#                yield(v)
+#            self._progressDialog.hide()
+#            QtGui.QApplication.processEvents()
 
     def exec_long_task(self, text, allow_cancel, task, *args, **kwargs):
         class TaskThread(Thread):
@@ -104,6 +143,7 @@ class QtProgressInformation(object):
         return t.result
 
 
+
 def long_task(parent=None, text="Working", allow_cancel=False):
     def wrap(task):
         def taskWrapper(*args, **kwargs):
@@ -150,27 +190,30 @@ if __name__ == "__main__":
                         break
                 return "result of task2b"
 
-            print (task1a(1))
+#            print (task1a(1))
+#
+#            try:
+#                print (task1b(3))
+#            except CancelWarning:
+#                print ("task1b cancelled")
+#
+#
+#            print (self.exec_long_task("exec_long_task(without cancel)", False, task2a, 1))
+#
+#            try:
+#                print (self.exec_long_task("exec_long_task(with cancel", True, task2b, 5))
+#            except CancelWarning:
+#                print ("task2 cancelled")
 
             try:
-                print (task1b(3))
-            except CancelWarning:
-                print ("task1b cancelled")
-
-
-            print (self.exec_long_task("exec_long_task(without cancel)", False, task2a, 1))
-
-            try:
-                print (self.exec_long_task("exec_long_task(with cancel", True, task2b, 5))
-            except CancelWarning:
-                print ("task2 cancelled")
-
-
-
-            for _ in self.progress_iterator(xrange(100), "progressbar(without cancel)", False):
-                t = time.clock()
-                while time.clock() - t < .01:
-                    pass
+                for x in self.progress_iterator(xrange(100), "progressbar(without cancel)", False):
+                    t = time.clock()
+                    while time.clock() - t < .01:
+                        pass
+                    if x > 80:
+                        raise Exception
+            except Exception as e:
+                print (str(e))
 
             try:
                 for _ in self.progress_iterator(xrange(100), "progressbar(with cancel)", True):

@@ -1,2 +1,2 @@
 def p():
-    print "hej from My module"
+    print "hello from My module"
