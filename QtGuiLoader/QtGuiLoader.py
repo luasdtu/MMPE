@@ -1,5 +1,4 @@
 '''
-
 Classes for loading a QWidget designed in QT Designer as MainWindow, Dialog or Widget
 Examples of how to use can be found in UseQtGuiLoader.py
 
@@ -31,7 +30,7 @@ import os
 import sys
 import imp
 import inspect
-from build_cx_exe import exe_std_err
+from build_exe import exe_std_err
 
 
 class QtGuiLoader(object):
@@ -57,17 +56,28 @@ class QtGuiLoader(object):
         imp.reload(ui_module)
 
     def connect_actions(self, action_receiver=None):
+        if not hasattr(self, 'run') and hasattr(self.parent(), 'run'):
+            self.run = self.parent().run
         for name, action in [(n, a) for n, a in vars(self.ui).items() if isinstance(a, QtGui.QAction)]:
             if action_receiver is None:
                 action_receiver = self
+            if hasattr(action_receiver, "_" + name) and hasattr(self, "run") and hasattr(self, 'gui'):
+                func = getattr(action_receiver, "_" + name)
+                def action_wrapper(f):
+                    def wrapper(*args, **kwargs):
+                        return self.gui.run(f, *args, **kwargs)
+                    return wrapper
+
+                setattr(action_receiver, name, action_wrapper(func))
+
             if hasattr(action_receiver, name):
                 QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), getattr(action_receiver, name))
-            elif action.receivers(QtCore.SIGNAL("triggered()")) == 0:
+            elif not hasattr(action_receiver, "_" + name):
                 try:
                     source_file = inspect.getsourcefile(self.__class__)
                     class_source = inspect.getsource(self.__class__)
                     func_source = """
-    def %s(self):
+    def _%s(self):
         #Auto implemented action handler
         raise NotImplementedError
 """ % name
@@ -76,7 +86,7 @@ class QtGuiLoader(object):
                         source = fid.read().replace(class_source, class_source + func_source)
                         fid.seek(0)
                         fid.write(source)
-                    print ("Missing method '%s' appended to class %s" % (name, self.__class__.__name__))
+                    print ("Missing method '_%s' appended to class %s" % (name, self.__class__.__name__))
                 except:
                     raise Warning("Action %s not connected. Method with name '%s' not found and autogeneration failed" % (action.text(), name))
 
@@ -137,9 +147,10 @@ class QtGuiApplication(object):
 
 class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
 
-    def __init__(self, ui_module, parent=None, connect_actions=True):
+    def __init__(self, ui_module, connect_actions=True):
+        self.gui = self
         QtGuiApplication.__init__(self, ui_module)
-        QtGui.QMainWindow.__init__(self, parent)
+        QtGui.QMainWindow.__init__(self)
 
         if "Ui_Form" in dir(ui_module):
             self.ui = ui_module.Ui_Form()
@@ -165,8 +176,6 @@ class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
         if connect_actions:
             self.connect_actions()
 
-        if "python" not in os.path.basename(sys.executable):
-            sys.stderr = exe_std_err.ExeStdErr()
 
     def start(self):
         self.load_settings()
@@ -190,6 +199,7 @@ class QtMainWindowLoader(QtGuiLoader, QtGuiApplication, QtGui.QMainWindow):
 class QtDialogLoader(QtGuiLoader, QtGuiApplication, QtGui.QDialog):
 
     def __init__(self, ui_module, parent, modal=True, connect_actions=True):
+        self.gui = parent
         QtGuiApplication.__init__(self, ui_module)
         QtGui.QDialog.__init__(self, parent)
         self.modal = modal
@@ -216,7 +226,9 @@ class QtDialogLoader(QtGuiLoader, QtGuiApplication, QtGui.QDialog):
 
     def hideEvent(self, *args, **kwargs):
         self.save_settings()
-        return QtGui.QDialog.hideEvent(self, *args, **kwargs)
+        if isinstance(self, QtGui.QDialog):
+            return QtGui.QDialog.hideEvent(self, *args, **kwargs)
+
 
 
 class QtWidgetLoader(QtGuiLoader, QtGui.QWidget):
@@ -224,6 +236,7 @@ class QtWidgetLoader(QtGuiLoader, QtGui.QWidget):
     def __init__(self, ui_module, action_receiver=None, parent=None, connect_actions=True):
         if "ui_module" not in vars(self):
             QtGui.QWidget.__init__(self, parent)
+            self.gui = parent
             self.ui_module = ui_module
             self.compile_ui(ui_module)
             self.ui = ui_module.Ui_Form()
