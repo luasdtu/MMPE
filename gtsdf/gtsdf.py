@@ -149,7 +149,7 @@ def save(filename, data, **kwargs):
             f.attrs['description'] = kwargs['description']
         f.attrs['no_attributes'] = no_attributes
         if 'attribute_names' in kwargs:
-            assert(len(kwargs['attribute_names']) == no_attributes)
+            assert len(kwargs['attribute_names']) == no_attributes, "len(attribute_names)=%d but data shape is %s" % (len(kwargs['attribute_names']), data.shape)
             f.create_dataset("attribute_names", data=np.array(kwargs['attribute_names'], dtype=np.string_))
         if 'attribute_units' in kwargs:
             assert(len(kwargs['attribute_units']) == no_attributes)
@@ -214,8 +214,9 @@ def append_block(filename, data, **kwargs):
 
         if "int" in str(dtype):
             int_res = (np.iinfo(dtype).max - np.iinfo(dtype).min)
-            if min(pct_res[pct_res > 0]) * int_res < 256:
-                raise Warning("Less than 256 values are used to represent 50%% of the values in column(s): %s\nConsider removing outliers or use float datatype" % np.where(pct_res[pct_res > 0] * int_res < 256)[0])
+            with np.errstate(invalid='ignore'):
+                if min(pct_res[pct_res > 0]) * int_res < 256:
+                    raise Warning("Less than 256 values are used to represent 50%% of the values in column(s): %s\nConsider removing outliers or use float datatype" % np.where(pct_res[pct_res > 0] * int_res < 256)[0])
 
     except AssertionError:
         f.close()
