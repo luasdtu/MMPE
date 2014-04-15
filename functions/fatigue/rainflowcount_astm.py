@@ -49,7 +49,7 @@ def find_extremes(signal):  # cpdef find_extremes(np.ndarray[double,ndim=1] sign
 
 
 def rainflow_astm(sig):  # cpdef rainflow_astm(np.ndarray[double,ndim=1] sig):
-    """Cython compilable rain flow count without time analysis
+    """Cython compilable rain ampl_mean count without time analysis
 
 
     This implemementation is based on the c-implementation by Adam Nieslony found at
@@ -74,23 +74,25 @@ def rainflow_astm(sig):  # cpdef rainflow_astm(np.ndarray[double,ndim=1] sig):
     # cdef double ampl
     a = []
     sig_ptr = 0
-    flow = []
+    ampl_mean = []
     for _ in xrange(len(sig)):
         a.append(sig[sig_ptr])
         sig_ptr += 1
         while len(a) > 2 and abs(a[-3] - a[-2]) <= abs(a[-2] - a[-1]):
             ampl = abs(a[-3] - a[-2])
+            mean = (a[-3] + a[-2]) / 2;
             if len(a) == 3:
                 del a[0]
                 if ampl > 0:
-                    flow.append(ampl)
+                    ampl_mean.append((ampl, mean))
             elif len(a) > 3:
                 del a[-3:-1]
                 if ampl > 0:
-                    flow.append(ampl)
-                    flow.append(ampl)
+                    ampl_mean.append((ampl, mean))
+                    ampl_mean.append((ampl, mean))
     for index in xrange(len(a) - 1):
         ampl = abs(a[index] - a[index + 1])
+        mean = (a[index] + a[index + 1]) / 2;
         if ampl > 0:
-            flow.append(ampl)
-    return flow
+            ampl_mean.append((ampl, mean))
+    return ampl_mean
