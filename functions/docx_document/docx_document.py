@@ -11,15 +11,20 @@ Part of Python's docx module - http://github.com/mikemaccana/python-docx
 See LICENSE for licensing information.
 """
 
-import docx
-import re
-from docx import picture, table, caption, pagebreak
 import os
+import re
 import shutil
+
+from docx import picture, table, caption, pagebreak
+import docx
 from lxml import etree
+
+from functions.process_exec import pexec
+
+
 re_bullet_lst = re.compile("[+,\-,*] (.*)")
 re_number_lst = re.compile("[\d]+\. (.*)")
-inkscape_path = os.path.join(os.path.dirname(__file__), "inkscape/inkscape.exe")
+inkscape_path = os.path.relpath(os.path.join(os.path.dirname(__file__.replace("library.zip", '')), "inkscape/inkscape.exe"))
 pp = lambda t : etree.tostring(t, pretty_print=True)
 
 def vector_graphics_support():
@@ -32,13 +37,16 @@ def prefered_graphic_format():
         return "png"
 
 
+class ConversionError(Exception):
+    pass
+
 class DocxDocument(object):
     def __init__(self, filename, title='', subject='', creator='', keywords=[], page_margins={'top':2, 'bottom':2, 'left':3, 'right':2}):
 
         self.template_dir = os.path.join(os.path.dirname(filename), "docx_template_" + os.path.splitext(os.path.basename(filename))[0])
         if os.path.isdir(self.template_dir):
             shutil.rmtree(self.template_dir)
-        shutil.copytree(os.path.join(os.path.dirname(__file__), 'docx-template_clean'), self.template_dir)
+        shutil.copytree(os.path.join(os.path.dirname(__file__.replace("library.zip", '')), 'docx-template_clean'), self.template_dir)
         docx.template_dir = self.template_dir
 
         self.filename = filename
@@ -67,6 +75,8 @@ class DocxDocument(object):
         self.new_page = lambda : self.body.append(pagebreak())
         self.table = docx.table
         self.paragraph = docx.paragraph
+        self.caption = docx.caption
+        self.heading = docx.heading
 
     def write_access(self):
         try:
@@ -110,11 +120,18 @@ class DocxDocument(object):
         self.body.append(caption("Figure", caption_text))
 
     def picture(self, path, title="", pixelwidth=None, pixelheight=None):
+        global inkscape_path
         _, ext = os.path.splitext(path.lower())
         if ext in (".svg", '.svgz', '.eps', '.pdf'):
             emf_path = path.replace(ext, '.emf')
-            os.system('%s  "%s" --export-emf="%s"' % (inkscape_path, path, emf_path))
+            args = [inkscape_path, path, '--export-emf=%s' % emf_path]
+            returncode, stdout, stderr = pexec(args)
+            if returncode != 0 or not os.path.exists(emf_path):
+                inkscape_path = ""
+                raise ConversionError("%s\n%s" % (stdout, stderr))
+            #succeded
             path = emf_path
+
         self.relationships, picpara = picture(self.relationships, path, title, pixelwidth, pixelheight)
         return picpara
 
@@ -269,7 +286,7 @@ if __name__ == '__main__':
 #                       ['B1', 'B2', 'B3'],
 #                       ['C1', 'C2', 'C3']], False)
 #
- #   doc.append_picture('../myplot.pdf', "hej", 100, 100)
+ #   doc.append_picture('../myplot.pdf', "test", 100, 100)
 #    doc.append_markdown("""#Welcome to Python's docx module
 ###Make and edit docx in 200 lines of pure Python
 #The module was created when I was looking for a Python support for MS Word .doc files on PyPI and Stackoverflow. Unfortunately, the only solutions I could find used:

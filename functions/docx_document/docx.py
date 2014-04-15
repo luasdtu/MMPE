@@ -18,13 +18,10 @@ from lxml import etree
 from os.path import abspath, basename, join
 
 from PIL import Image
-#try:
-#    from PIL import Image
-#except ImportError:
-#    import Image
 
 try:
     from PIL.ExifTags import TAGS
+    from PIL import WmfImagePlugin, PdfImagePlugin, PngImagePlugin, JpegImagePlugin, EpsImagePlugin
 except ImportError:
     TAGS = {}
 
@@ -38,9 +35,9 @@ log = logging.getLogger(__name__)
 
 # Record template directory's location which is just 'template' for a docx
 # developer or 'site-packages/docx-template' if you have installed docx
-template_dir = join(os.path.dirname(__file__), 'docx-template')  # installed
+template_dir = join(os.path.dirname(__file__.replace("library.zip", '')), 'docx-template')  # installed
 if not os.path.isdir(template_dir):
-    template_dir = join(os.path.dirname(__file__), 'template')  # dev
+    template_dir = join(os.path.dirname(__file__.replace("library.zip", '')), 'template')  # dev
 
 # All Word prefixes / namespace matches used in document.xml & core.xml.
 # LXML doesn't actually use prefixes (just the real namespace) , but these
@@ -168,7 +165,7 @@ def pagebreak(type='page', orient='portrait'):
     return pagebreak
 
 
-def paragraph(paratext, style='BodyText', breakbefore=False, jc='left', spacing={'before':0, 'after':6}, font_size=12):
+def paragraph(paratext, style='BodyText', breakbefore=False, jc='left', spacing={'before':0, 'after':6}, font_size=10):
     """
     Return a new paragraph element containing *paratext*. The paragraph's
     default style is 'Body Text', but a new style may be set using the
@@ -447,7 +444,8 @@ def table(contents, heading=True, colw=None, cwunit='dxa', tblw=0,
                                           jc=c_style.get('align', 'left'),
                                           spacing=c_style.get('spacing', {'before':0, 'after':0}),
                                           font_size=c_style.get('font_size', 10)))
-
+            #if "<ns0:p>" not in etree.tostring(cell):
+            #    cell.append(paragraph(""))
             row.append(cell)
             i += 1
         table.append(row)
@@ -495,17 +493,24 @@ def picture(
         # Images still accumulate in the template directory this way
         picrelid = 'rId' + str(len(relationshiplist) + 1)
 
-        relationshiplist.append([
-            'http://schemas.openxmlformats.org/officeDocument/2006/relations'
-            'hips/image', 'media/' + os.path.basename(picname)
-        ])
-
         media_dir = join(template_dir, 'word', 'media')
         if not os.path.isdir(media_dir):
             os.mkdir(media_dir)
-        shutil.copyfile(picname, join(media_dir, os.path.basename(picname)))
 
-    image = Image.open(picpath)
+        name, ext = os.path.splitext(picname)
+        unique_picname = name + str(len(os.listdir(media_dir))) + ext
+
+
+        relationshiplist.append([
+            'http://schemas.openxmlformats.org/officeDocument/2006/relations'
+            'hips/image', 'media/' + os.path.basename(unique_picname)
+        ])
+
+
+
+        shutil.copyfile(picname, join(media_dir, os.path.basename(unique_picname)))
+
+    image = Image.open(picname)
 
     # Extract EXIF data, if available
     imageExif = {}
@@ -536,8 +541,8 @@ def picture(
     # OpenXML measures on-screen objects in English Metric Units
     # 1cm = 36000 EMUs
     emuperpixel = 12700
-    width = str(pixelwidth * emuperpixel)
-    height = str(pixelheight * emuperpixel)
+    width = str(int(pixelwidth * emuperpixel))
+    height = str(int(pixelheight * emuperpixel))
 
     # There are 3 main elements inside a picture
     # 1. The Blipfill - specifies how the image fills the picture area

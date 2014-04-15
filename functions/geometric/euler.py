@@ -108,6 +108,11 @@ def A2euler(A):
 #    return xyz2euler(*A2xyz(A))
 
 def euler2angle(euler):
+    if euler[0] > 1:
+        euler[0] = 1
+    if euler[0] < -1:
+        euler[0] = -1
+
     return np.arccos(euler[0]) * 2
 
 def euler2gl(euler):
