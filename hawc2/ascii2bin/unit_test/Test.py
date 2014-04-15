@@ -5,13 +5,13 @@ Created on 29/10/2013
 '''
 
 
-from hawc2ascii2bin.ascii2bin import ascii2bin, size_from_file
-from hawc2ascii2bin.unit_test import Hawc2io
+from hawc2.ascii2bin.ascii2bin import ascii2bin, size_from_file
+from hawc2.ascii2bin.unit_test import Hawc2io
 import numpy as np
 import os
 import sys
 import unittest
-from textui.textui import DaemonUI
+from ui.daemon_ui import DaemonUI
 
 class Test(unittest.TestCase):
 

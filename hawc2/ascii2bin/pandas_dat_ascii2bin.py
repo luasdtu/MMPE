@@ -22,10 +22,9 @@ def pandas_dat_ascii2bin(ascii_filename, bin_filename, ui):
         scale_factors = []
         for _, sensor in df.iteritems():
             sf = sensor.abs().max() / 32000
-            if sf == 0:
-                sf = np.nan
-            sensor /= sf
-            np.round(sensor.fillna(0).values).astype(np.int16).tofile(outfile)
+            if sf > 0:
+                sensor /= sf
+            np.round(sensor.values).astype(np.int16).tofile(outfile)
             scale_factors.append(sf)
         return np.array(scale_factors)
     #return compress(df, bin_filename)
